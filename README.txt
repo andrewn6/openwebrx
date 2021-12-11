@@ -9,4 +9,25 @@ All code in this repo released under its respective license.
 
 How do I run this?
 
-```git clone https://github.com/anddddrew/openwebrx```
+git clone https://github.com/anddddrew/openwebrx
+
+cd openwebrx/
+
+python3 openwebrx.py
+
+Then go to http://localhost:8073.
+
+*NOTE*
+
+Make sure to install csdr or else you cannot run OpenWEBRX
+
+You can do so by cloning this repo:
+https://github.com/ha7ilm/csdr
+
+cd csdr/
+
+make
+
+sudo make install
+
+After that you should be good to go :)
