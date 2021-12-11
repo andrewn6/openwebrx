@@ -323,32 +323,14 @@ class dsp:
     def start(self):
         command_base=self.chain(self.demodulator), f
 
-        #create control pipes for csdr
+        # reate control pipes for csdr
         self.pipe_base_path="/tmp/openwebrx_pipe_{myid}_".format(myid=id(self))
         # self.bpf_pipe = self.shift_pipe = self.squelch_pipe = self.smeter_pipe = None
 
         self.try_create_pipes(self.pipe_names, command_base)
 
-        # if "{bpf_pipe}" in command_base:
-            # self.bpf_pipe=pipe_base_path+"bpf"
-            # self.mkfifo(self.bpf_pipe)
-        # if "{shift_pipe}" in command_base:
-            # self.shift_pipe=pipe_base_path+"shift"
-            # self.mkfifo(self.shift_pipe)
-        # if "{squelch_pipe}" in command_base:
-            # self.squelch_pipe=pipe_base_path+"squelch"
-            # self.mkfifo(self.squelch_pipe)
-        # if "{smeter_pipe}" in command_base:
-            # self.smeter_pipe=pipe_base_path+"smeter"
-            # self.mkfifo(self.smeter_pipe)
-        # if "{iqtee_pipe}" in command_base:
-            # self.iqtee_pipe=pipe_base_path+"iqtee"
-            # self.mkfifo(self.iqtee_pipe)
-        # if "{iqtee2_pipe}" in command_base:
-            # self.iqtee2_pipe=pipe_base_path+"iqtee2"
-            # self.mkfifo(self.iqtee2_pipe)
-
-        #run the command
+       
+        # Run the command
         command=command_base.format( bpf_pipe=self.bpf_pipe, shift_pipe=self.shift_pipe, decimation=self.decimation, \
             last_decimation=self.last_decimation, fft_size=self.fft_size, fft_block_size=self.fft_block_size(), fft_averages=self.fft_averages, \
             bpf_transition_bw=float(self.bpf_transition_bw)/self.if_samp_rate(), ddc_transition_bw=self.ddc_transition_bw(), \
