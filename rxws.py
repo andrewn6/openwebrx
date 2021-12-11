@@ -1,27 +1,22 @@
 """
 rxws: WebSocket methods implemented for OpenWebRX
-
     This file is part of OpenWebRX, 
     an open-source SDR receiver software with a web UI.
     Copyright (c) 2013-2015 by Andras Retzler <randras@sdr.hu>
-
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
     published by the Free Software Foundation, either version 3 of the
     License, or (at your option) any later version.
-
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 
 import base64
-import sha
+import hashlib
 import select
 import code
 
@@ -41,7 +36,7 @@ def handshake(myself):
     if (not h_key_exists("upgrade")) or not (h_value("upgrade")=="websocket") or (not h_key_exists("sec-websocket-key")):
         raise WebSocketException
     ws_key=h_value("sec-websocket-key")
-    ws_key_toreturn=base64.b64encode(sha.new(ws_key+"258EAFA5-E914-47DA-95CA-C5AB0DC85B11").digest())
+    ws_key_toreturn=base64.b64encode(hashlib.sha1.new(ws_key+"258EAFA5-E914-47DA-95CA-C5AB0DC85B11").digest())
     #A sample list of keys we get: [('origin', 'http://localhost:8073'), ('upgrade', 'websocket'), ('sec-websocket-extensions', 'x-webkit-deflate-frame'), ('sec-websocket-version', '13'), ('host', 'localhost:8073'), ('sec-websocket-key', 't9J1rgy4fc9fg2Hshhnkmg=='), ('connection', 'Upgrade'), ('pragma', 'no-cache'), ('cache-control', 'no-cache')]
     myself.wfile.write("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: "+ws_key_toreturn+"\r\nCQ-CQ-de: HA5KFU\r\n\r\n")
 
@@ -106,14 +101,15 @@ def readsock(myself,size,blocking):
 def recv(myself, blocking=False, debug=False):
     bufsize=70000
     #myself.connection.setblocking(blocking) #umm... we cannot do that with rfile
-    if debug: print "ws_recv begin"
+    if debug: 
+        print("ws_recv begin")
     try:
         data=readsock(myself,6,blocking)
         #print "rxws.recv bytes:",xxd(data) 
     except:
-        if debug: print "ws_recv error" 
+        if debug: print("ws_recv error")
         return ""
-    if debug: print "ws_recv recved"
+    if debug: print("ws_recv recved")
     if(len(data)==0): return ""
     fin=ord(data[0])&128!=0
     is_text_frame=ord(data[0])&15==1
@@ -156,14 +152,14 @@ def send(myself, data, begin_id="", debug=0):
             flush(myself)
             myself.wfile.write(header+data_to_send)
             flush(myself)
-            if debug: print "rxws.send ==================== #1 if branch :: from={0} to={1} dlen={2} hlen={3}".format(counter,counter+base_frame_size-len(begin_id),len(data_to_send),len(header))
+            if debug: print("rxws.send ==================== #1 if branch :: from={0} to={1} dlen={2} hlen={3}".format(counter,counter+base_frame_size-len(begin_id),len(data_to_send),len(header)))
         else:
             data_to_send=begin_id+data[counter:]
             header=get_header(len(data_to_send))
             flush(myself)
             myself.wfile.write(header+data_to_send)
             flush(myself)
-            if debug: print "rxws.send :: #2 else branch :: dlen={0} hlen={1}".format(len(data_to_send),len(header))
+            if debug: print("rxws.send :: #2 else branch :: dlen={0} hlen={1}".format(len(data_to_send),len(header)))
             #if debug: print "header:\n"+xxdg(header)+"\n\nws data:\n"+xxdg(data_to_send)
             break
         counter+=base_frame_size-len(begin_id)

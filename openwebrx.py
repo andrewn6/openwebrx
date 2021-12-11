@@ -32,16 +32,16 @@ import datetime
 import subprocess
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from SocketServer import ThreadingMixIn
+from socketserver import ThreadingMixIn
 import fcntl
 import time
-import md5
+import _md5
 import random
 import threading
 import sys
 import traceback
 from collections import namedtuple
-import Queue
+from multiprocessing import Queue
 import ctypes
 
 #import rtl_mus
