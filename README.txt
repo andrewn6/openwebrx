@@ -5,3 +5,8 @@ I did this because the project got discontinued, and it requires Python 2 which 
 All code in this repo released under its respective license.
 
 *I do not own this code, it is just a fork of it for it to support Python 3 and improve it.*
+
+
+How do I run this?
+
+```git clone https://github.com/anddddrew/openwebrx```
