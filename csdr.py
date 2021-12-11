@@ -128,8 +128,9 @@ class dsp:
             return 31.25
 
     def start_secondary_demodulator(self):
-        if(not self.secondary_demodulator): return
-        print "[openwebrx] starting secondary demodulator from IF input sampled at %d"%self.if_samp_rate()
+        if(not self.secondary_demodulator): 
+            return
+        print("[openwebrx] starting secondary demodulator from IF input sampled at %d"%self.if_samp_rate())
         secondary_command_fft=self.secondary_chain("fft")
         secondary_command_demod=self.secondary_chain(self.secondary_demodulator)
         self.try_create_pipes(self.secondary_pipe_names, secondary_command_demod + secondary_command_fft)
@@ -150,16 +151,16 @@ class dsp:
             if_samp_rate=self.if_samp_rate()
             )
 
-        print "[openwebrx-dsp-plugin:csdr] secondary command (fft) =", secondary_command_fft
-        print "[openwebrx-dsp-plugin:csdr] secondary command (demod) =", secondary_command_demod
+        print("[openwebrx-dsp-plugin:csdr] secondary command (fft) =", secondary_command_fft)
+        print("[openwebrx-dsp-plugin:csdr] secondary command (demod) =",  secondary_command_demod)
         #code.interact(local=locals())
         my_env=os.environ.copy()
         #if self.csdr_dynamic_bufsize: my_env["CSDR_DYNAMIC_BUFSIZE_ON"]="1";
         if self.csdr_print_bufsizes: my_env["CSDR_PRINT_BUFSIZES"]="1";
         self.secondary_process_fft = subprocess.Popen(secondary_command_fft, stdout=subprocess.PIPE, shell=True, preexec_fn=os.setpgrp, env=my_env)
-        print "[openwebrx-dsp-plugin:csdr] Popen on secondary command (fft)"
+        print("[openwebrx-dsp-plugin:csdr] Popen on secondary command (fft)")
         self.secondary_process_demod = subprocess.Popen(secondary_command_demod, stdout=subprocess.PIPE, shell=True, preexec_fn=os.setpgrp, env=my_env) #TODO digimodes
-        print "[openwebrx-dsp-plugin:csdr] Popen on secondary command (demod)" #TODO digimodes
+        print("[openwebrx-dsp-plugin:csdr] Popen on secondary command (demod)") #TODO digimodes
         self.secondary_processes_running = True
 
         #open control pipes for csdr and send initialization data
