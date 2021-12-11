@@ -314,14 +314,14 @@ class dsp:
             pipe_path = getattr(self,pipe_name,None)
             if pipe_path:
                 try: os.unlink(pipe_path)
-                except Exception as e: print "[openwebrx-dsp-plugin:csdr] try_delete_pipes() ::", e
+                except Exception as e: print("[openwebrx-dsp-plugin:csdr]try_delete_pipes() ::"), e
 
     def set_pipe_nonblocking(self, pipe):
         flags = fcntl.fcntl(pipe, fcntl.F_GETFL)
         fcntl.fcntl(pipe, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
     def start(self):
-        command_base=self.chain(self.demodulator)
+        command_base=self.chain(self.demodulator), f
 
         #create control pipes for csdr
         self.pipe_base_path="/tmp/openwebrx_pipe_{myid}_".format(myid=id(self))
@@ -355,7 +355,7 @@ class dsp:
             flowcontrol=int(self.samp_rate*2), start_bufsize=self.base_bufsize*self.decimation, nc_port=self.nc_port, \
             squelch_pipe=self.squelch_pipe, smeter_pipe=self.smeter_pipe, iqtee_pipe=self.iqtee_pipe, iqtee2_pipe=self.iqtee2_pipe )
 
-        print "[openwebrx-dsp-plugin:csdr] Command =",command
+        print("[openwebrx-dsp-plugin:csdr] Command =", command)
         #code.interact(local=locals())
         my_env=os.environ.copy()
         if self.csdr_dynamic_bufsize: my_env["CSDR_DYNAMIC_BUFSIZE_ON"]="1";
