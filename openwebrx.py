@@ -26,7 +26,7 @@ import os
 import code
 import importlib
 import csdr
-import thread
+import _thread
 import time
 import datetime
 import subprocess
