@@ -1,5 +1,5 @@
-#!/usr/bin/python2
-print "" # python2.7 is required to run OpenWebRX instead of python3. Please run me by: python2 openwebrx.py
+#!/usr/bin/python3
+me by: python2 openwebrx.py)
 """
 
     This file is part of OpenWebRX,
