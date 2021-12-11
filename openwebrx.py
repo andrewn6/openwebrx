@@ -473,7 +473,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
                     while True:
                         myclient.loopstat=0
                         if myclient.closed[0]:
-                            print "[openwebrx-httpd:ws] client closed by other thread"
+                            print("[openwebrx-httpd:ws] client closed by other thread")
                             break
 
                         # ========= send audio =========
@@ -541,7 +541,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
                             #try:
                             if not rdata: break
                             elif rdata[:3]=="SET":
-                                print "[openwebrx-httpd:ws,%d] command: %s"%(client_i,rdata)
+                                print("[openwebrx-httpd:ws,%d] command:%s"%(client_i,rdata))
                                 pairs=rdata[4:].split(" ")
                                 bpf_set=False
                                 new_bpf=dsp.get_bpf()
@@ -591,7 +591,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
                                     elif param_name=="secondary_offset_freq" and 0 <= int(param_value) <= dsp.if_samp_rate()/2 and cfg.digimodes_enable:
                                         dsp.set_secondary_offset_freq(int(param_value))
                                     else:
-                                        print "[openwebrx-httpd:ws] invalid parameter"
+                                        print("[openwebrx-httpd:ws] invalid parameter")
                                 if bpf_set:
                                     myclient.loopstat=560
                                     dsp.set_bpf(*new_bpf)
@@ -599,7 +599,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
                 except:
                     myclient.loopstat=990
                     exc_type, exc_value, exc_traceback = sys.exc_info()
-                    print "[openwebrx-httpd:ws] exception: ",exc_type,exc_value
+                    print("[openwebrx-httpd:ws] exception: ",exc_type,exc_value)
                     traceback.print_tb(exc_traceback) #TODO digimodes
                     #if exc_value[0]==32: #"broken pipe", client disconnected
                     #    pass
@@ -615,7 +615,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
                     dsp.stop()
                     del dsp
                 except:
-                    print "[openwebrx-httpd] error in dsp.stop()"
+                    print("[openwebrx-httpd] error in dsp.stop()")
 
                 #delete disconnected client
                 myclient.loopstat=992
@@ -625,7 +625,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
                     close_client(id_to_close,False)
                 except:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
-                    print "[openwebrx-httpd] client cannot be closed: ",exc_type,exc_value
+                    print("[openwebrx-httpd] client cannot be closed: ",exc_type,exc_value)
                     traceback.print_tb(exc_traceback)
                 finally:
                     cmr()
@@ -635,7 +635,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
                 #self.send_header('Content-type','text/plain')
                 getbands=lambda: str(int(cfg.shown_center_freq-cfg.samp_rate/2))+"-"+str(int(cfg.shown_center_freq+cfg.samp_rate/2))
                 self.wfile.write("status="+("inactive" if receiver_failed else "active")+"\nname="+cfg.receiver_name+"\nsdr_hw="+cfg.receiver_device+"\nop_email="+cfg.receiver_admin+"\nbands="+getbands()+"\nusers="+str(len(clients))+"\nusers_max="+str(cfg.max_clients)+"\navatar_ctime="+avatar_ctime+"\ngps="+str(cfg.receiver_gps)+"\nasl="+str(cfg.receiver_asl)+"\nloc="+cfg.receiver_location+"\nsw_version="+sw_version+"\nantenna="+cfg.receiver_ant+"\n")
-                print "[openwebrx-httpd] GET /status/ from",self.client_address[0]
+                print("[openwebrx-httpd] GET/status/from",self.client_address[0])
             else:
                 f=open(rootdir+self.path)
                 data=f.read()
@@ -698,7 +698,7 @@ class WebRXHandler(BaseHTTPRequestHandler):
             self.send_error(404, 'Invalid path.')
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            print "[openwebrx-httpd] error (@outside):", exc_type, exc_value
+            print("[openwebrx-httpd] error (@outside):", exc_type, exc_value)
             traceback.print_tb(exc_traceback)
 
 
