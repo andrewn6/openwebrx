@@ -275,18 +275,17 @@ var Runtime = {
                 return 4;
             case 'double':
                 return 8;
-            default:
-                {
-                    if (type[type.length - 1] === '*') {
-                        return Runtime.QUANTUM_SIZE; // A pointer
-                    } else if (type[0] === 'i') {
-                        var bits = parseInt(type.substr(1));
-                        assert(bits % 8 === 0);
-                        return bits / 8;
-                    } else {
-                        return 0;
-                    }
+            default: {
+                if (type[type.length - 1] === '*') {
+                    return Runtime.QUANTUM_SIZE; // A pointer
+                } else if (type[0] === 'i') {
+                    var bits = parseInt(type.substr(1));
+                    assert(bits % 8 === 0);
+                    return bits / 8;
+                } else {
+                    return 0;
                 }
+            }
         }
     },
     getNativeFieldSize: function(type) {
@@ -579,11 +578,6 @@ var Runtime = {
 
 
 Module['Runtime'] = Runtime;
-
-
-
-
-
 
 
 
@@ -1095,24 +1089,22 @@ function demangle(func) {
                         case 'R':
                             list.push(parse(true, 1, true)[0] + '&');
                             break; // reference
-                        case 'L':
-                            { // literal
-                                i++; // skip basic type
-                                var end = func.indexOf('E', i);
-                                var size = end - i;
-                                list.push(func.substr(i, size));
-                                i += size + 2; // size + 'EE'
-                                break;
-                            }
-                        case 'A':
-                            { // array
-                                var size = parseInt(func.substr(i));
-                                i += size.toString().length;
-                                if (func[i] !== '_') throw '?';
-                                i++; // skip _
-                                list.push(parse(true, 1, true)[0] + ' [' + size + ']');
-                                break;
-                            }
+                        case 'L': { // literal
+                            i++; // skip basic type
+                            var end = func.indexOf('E', i);
+                            var size = end - i;
+                            list.push(func.substr(i, size));
+                            i += size + 2; // size + 'EE'
+                            break;
+                        }
+                        case 'A': { // array
+                            var size = parseInt(func.substr(i));
+                            i += size.toString().length;
+                            if (func[i] !== '_') throw '?';
+                            i++; // skip _
+                            list.push(parse(true, 1, true)[0] + ' [' + size + ']');
+                            break;
+                        }
                         case 'E':
                             break paramLoop;
                         default:
@@ -1362,7 +1354,8 @@ function unSign(value, bits, ignore, sig) {
         return value;
     }
     return bits <= 32 ? 2 * Math.abs(1 << (bits - 1)) + value // Need some trickery, since if bits == 32, we are right at the limit of the bits JS uses in bitshifts
-        : Math.pow(2, bits) + value;
+        :
+        Math.pow(2, bits) + value;
 }
 
 function reSign(value, bits, ignore, sig) {
@@ -1370,7 +1363,8 @@ function reSign(value, bits, ignore, sig) {
         return value;
     }
     var half = bits <= 32 ? Math.abs(1 << (bits - 1)) // abs is needed if bits == 32
-        : Math.pow(2, bits - 1);
+        :
+        Math.pow(2, bits - 1);
     if (value >= half && (bits <= 32 || value > half)) { // for huge values, we can hit the precision limit and always get true here. so don't do that
         // but, in general there is no perfect solution here. With 64-bit ints, we get rounding and errors
         // TODO: In i64 mode 1, resign the two parts separately and safely
@@ -1471,11 +1465,6 @@ __ATINIT__.push({
 
 
 
-
-
-
-
-
 /* memory initializer */
 allocate([93, 59, 32, 101, 114, 114, 111, 114, 95, 118, 101, 99, 116, 111, 114, 95, 100, 98, 61, 50, 48, 42, 108, 111, 103, 49, 48, 40, 101, 114, 114, 111, 114, 95, 118, 101, 99, 116, 111, 114, 41, 59, 32, 112, 108, 111, 116, 40, 101, 114, 114, 111, 114, 95, 118, 101, 99, 116, 111, 114, 95, 100, 98, 41, 59, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 2, 0, 0, 0, 4, 0, 0, 0, 6, 0, 0, 0, 8, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 2, 0, 0, 0, 4, 0, 0, 0, 6, 0, 0, 0, 8, 0, 0, 0, 28, 231, 5, 82, 18, 219, 7, 82, 171, 207, 217, 210, 255, 248, 185, 81, 67, 26, 172, 211, 92, 100, 176, 210, 167, 29, 24, 212, 1, 58, 121, 211, 5, 161, 70, 212, 42, 210, 182, 211, 240, 134, 66, 212, 116, 10, 164, 211, 11, 46, 229, 211, 37, 173, 82, 210, 45, 128, 69, 83, 130, 129, 238, 83, 100, 212, 139, 84, 33, 133, 147, 84, 14, 87, 4, 85, 54, 41, 234, 84, 49, 183, 53, 85, 74, 117, 15, 85, 185, 20, 69, 85, 219, 25, 7, 85, 149, 8, 31, 85, 184, 136, 154, 84, 234, 77, 91, 84, 128, 81, 20, 212, 1, 159, 234, 212, 243, 146, 75, 213, 95, 236, 172, 213, 100, 44, 202, 213, 103, 156, 23, 214, 63, 161, 23, 214, 128, 90, 88, 214, 221, 79, 60, 214, 252, 178, 135, 214, 115, 177, 41, 214, 73, 44, 154, 214, 136, 253, 9, 87, 166, 141, 226, 87, 136, 253, 9, 87, 73, 44, 154, 214, 115, 177, 41, 214, 252, 178, 135, 214, 221, 79, 60, 214, 128, 90, 88, 214, 63, 161, 23, 214, 103, 156, 23, 214, 100, 44, 202, 213, 95, 236, 172, 213, 243, 146, 75, 213, 1, 159, 234, 212, 128, 81, 20, 212, 234, 77, 91, 84, 184, 136, 154, 84, 149, 8, 31, 85, 219, 25, 7, 85, 185, 20, 69, 85, 74, 117, 15, 85, 49, 183, 53, 85, 54, 41, 234, 84, 14, 87, 4, 85, 33, 133, 147, 84, 100, 212, 139, 84, 130, 129, 238, 83, 45, 128, 69, 83, 37, 173, 82, 210, 11, 46, 229, 211, 116, 10, 164, 211, 240, 134, 66, 212, 42, 210, 182, 211, 5, 161, 70, 212, 1, 58, 121, 211, 167, 29, 24, 212, 92, 100, 176, 210, 67, 26, 172, 211, 255, 248, 185, 81, 171, 207, 217, 210, 18, 219, 7, 82, 28, 231, 5, 82, 0, 0, 0, 0, 54, 48, 226, 58, 146, 125, 235, 58, 103, 152, 251, 58, 165, 142, 6, 59, 225, 4, 13, 59, 38, 144, 14, 59, 103, 147, 9, 59, 60, 177, 251, 58, 143, 77, 217, 58, 50, 249, 176, 58, 123, 7, 137, 58, 54, 86, 79, 58, 190, 7, 35, 58, 95, 252, 16, 58, 171, 157, 22, 58, 247, 87, 43, 58, 110, 118, 66, 58, 80, 3, 78, 58, 177, 6, 66, 58, 198, 99, 23, 58, 147, 77, 155, 57, 198, 133, 165, 184, 132, 132, 3, 186, 86, 199, 111, 186, 31, 120, 165, 186, 168, 52, 197, 186, 109, 19, 213, 186, 217, 231, 214, 186, 70, 11, 208, 186, 187, 54, 200, 186, 74, 193, 199, 186, 29, 174, 213, 186, 147, 247, 245, 186, 236, 65, 20, 187, 171, 131, 52, 187, 237, 240, 87, 187, 225, 230, 121, 187, 227, 255, 138, 187, 218, 143, 148, 187, 201, 29, 153, 187, 231, 85, 153, 187, 170, 248, 150, 187, 96, 122, 148, 187, 24, 117, 148, 187, 20, 11, 153, 187, 107, 95, 163, 187, 189, 69, 179, 187, 0, 61, 199, 187, 238, 187, 220, 187, 239, 190, 240, 187, 7, 61, 0, 188, 20, 3, 5, 188, 230, 111, 6, 188, 36, 12, 5, 188, 23, 20, 2, 188, 105, 106, 254, 187, 152, 89, 252, 187, 126, 93, 0, 188, 67, 116, 6, 188, 95, 51, 16, 188, 124, 114, 28, 188, 166, 86, 41, 188, 110, 184, 52, 188, 55, 165, 60, 188, 201, 216, 63, 188, 23, 26, 62, 188, 211, 92, 56, 188, 128, 156, 48, 188, 176, 117, 41, 188, 179, 144, 37, 188, 23, 251, 38, 188, 236, 150, 46, 188, 20, 198, 59, 188, 142, 104, 76, 188, 167, 54, 93, 188, 133, 108, 106, 188, 9, 168, 112, 188, 66, 198, 109, 188, 112, 148, 97, 188, 171, 26, 78, 188, 2, 111, 55, 188, 184, 1, 35, 188, 168, 120, 22, 188, 132, 80, 22, 188, 167, 127, 36, 188, 179, 102, 63, 188, 133, 85, 97, 188, 50, 99, 128, 188, 123, 181, 136, 188, 142, 242, 130, 188, 68, 247, 81, 188, 44, 158, 217, 187, 212, 209, 51, 59, 70, 233, 119, 60, 3, 184, 244, 60, 154, 24, 60, 61, 16, 180, 125, 61, 88, 146, 156, 61, 151, 75, 180, 61, 17, 154, 195, 61, 239, 227, 200, 61, 17, 154, 195, 61, 151, 75, 180, 61, 88, 146, 156, 61, 16, 180, 125, 61, 154, 24, 60, 61, 3, 184, 244, 60, 70, 233, 119, 60, 212, 209, 51, 59, 44, 158, 217, 187, 68, 247, 81, 188, 142, 242, 130, 188, 123, 181, 136, 188, 50, 99, 128, 188, 133, 85, 97, 188, 179, 102, 63, 188, 167, 127, 36, 188, 132, 80, 22, 188, 168, 120, 22, 188, 184, 1, 35, 188, 2, 111, 55, 188, 171, 26, 78, 188, 112, 148, 97, 188, 66, 198, 109, 188, 9, 168, 112, 188, 133, 108, 106, 188, 167, 54, 93, 188, 142, 104, 76, 188, 20, 198, 59, 188, 236, 150, 46, 188, 23, 251, 38, 188, 179, 144, 37, 188, 176, 117, 41, 188, 128, 156, 48, 188, 211, 92, 56, 188, 23, 26, 62, 188, 201, 216, 63, 188, 55, 165, 60, 188, 110, 184, 52, 188, 166, 86, 41, 188, 124, 114, 28, 188, 95, 51, 16, 188, 67, 116, 6, 188, 126, 93, 0, 188, 152, 89, 252, 187, 105, 106, 254, 187, 23, 20, 2, 188, 36, 12, 5, 188, 230, 111, 6, 188, 20, 3, 5, 188, 7, 61, 0, 188, 239, 190, 240, 187, 238, 187, 220, 187, 0, 61, 199, 187, 189, 69, 179, 187, 107, 95, 163, 187, 20, 11, 153, 187, 24, 117, 148, 187, 96, 122, 148, 187, 170, 248, 150, 187, 231, 85, 153, 187, 201, 29, 153, 187, 218, 143, 148, 187, 227, 255, 138, 187, 225, 230, 121, 187, 237, 240, 87, 187, 171, 131, 52, 187, 236, 65, 20, 187, 147, 247, 245, 186, 29, 174, 213, 186, 74, 193, 199, 186, 187, 54, 200, 186, 70, 11, 208, 186, 217, 231, 214, 186, 109, 19, 213, 186, 168, 52, 197, 186, 31, 120, 165, 186, 86, 199, 111, 186, 132, 132, 3, 186, 198, 133, 165, 184, 147, 77, 155, 57, 198, 99, 23, 58, 177, 6, 66, 58, 80, 3, 78, 58, 110, 118, 66, 58, 247, 87, 43, 58, 171, 157, 22, 58, 95, 252, 16, 58, 190, 7, 35, 58, 54, 86, 79, 58, 123, 7, 137, 58, 50, 249, 176, 58, 143, 77, 217, 58, 60, 177, 251, 58, 103, 147, 9, 59, 38, 144, 14, 59, 225, 4, 13, 59, 165, 142, 6, 59, 103, 152, 251, 58, 146, 125, 235, 58, 54, 48, 226, 58, 0, 0, 0, 0, 31, 224, 36, 59, 115, 56, 74, 59, 230, 137, 111, 59, 29, 135, 135, 59, 153, 60, 146, 59, 19, 29, 151, 59, 62, 4, 151, 59, 69, 68, 148, 59, 76, 15, 146, 59, 251, 153, 147, 59, 121, 52, 155, 59, 235, 152, 169, 59, 141, 162, 189, 59, 195, 136, 212, 59, 91, 146, 234, 59, 58, 21, 252, 59, 198, 63, 3, 60, 242, 143, 4, 60, 97, 184, 2, 60, 227, 203, 254, 59, 231, 145, 249, 59, 66, 250, 249, 59, 117, 110, 1, 60, 62, 101, 10, 60, 189, 221, 22, 60, 202, 186, 36, 60, 103, 75, 49, 60, 223, 4, 58, 60, 104, 64, 61, 60, 141, 196, 58, 60, 184, 243, 51, 60, 134, 137, 43, 60, 246, 237, 36, 60, 48, 73, 35, 60, 173, 144, 40, 60, 29, 212, 52, 60, 174, 2, 70, 60, 249, 67, 88, 60, 174, 220, 102, 60, 136, 113, 109, 60, 5, 86, 105, 60, 111, 144, 90, 60, 153, 59, 68, 60, 58, 26, 44, 60, 222, 86, 25, 60, 242, 163, 18, 60, 23, 35, 28, 60, 236, 141, 53, 60, 193, 31, 89, 60, 81, 164, 123, 60, 139, 228, 134, 60, 66, 159, 126, 60, 247, 221, 62, 60, 52, 158, 136, 59, 157, 147, 230, 187, 33, 62, 176, 188, 194, 133, 28, 189, 27, 184, 99, 189, 141, 28, 147, 189, 179, 58, 174, 189, 76, 247, 191, 189, 169, 34, 198, 189, 76, 247, 191, 189, 179, 58, 174, 189, 141, 28, 147, 189, 27, 184, 99, 189, 194, 133, 28, 189, 33, 62, 176, 188, 157, 147, 230, 187, 52, 158, 136, 59, 247, 221, 62, 60, 66, 159, 126, 60, 139, 228, 134, 60, 81, 164, 123, 60, 193, 31, 89, 60, 236, 141, 53, 60, 23, 35, 28, 60, 242, 163, 18, 60, 222, 86, 25, 60, 58, 26, 44, 60, 153, 59, 68, 60, 111, 144, 90, 60, 5, 86, 105, 60, 136, 113, 109, 60, 174, 220, 102, 60, 249, 67, 88, 60, 174, 2, 70, 60, 29, 212, 52, 60, 173, 144, 40, 60, 48, 73, 35, 60, 246, 237, 36, 60, 134, 137, 43, 60, 184, 243, 51, 60, 141, 196, 58, 60, 104, 64, 61, 60, 223, 4, 58, 60, 103, 75, 49, 60, 202, 186, 36, 60, 189, 221, 22, 60, 62, 101, 10, 60, 117, 110, 1, 60, 66, 250, 249, 59, 231, 145, 249, 59, 227, 203, 254, 59, 97, 184, 2, 60, 242, 143, 4, 60, 198, 63, 3, 60, 58, 21, 252, 59, 91, 146, 234, 59, 195, 136, 212, 59, 141, 162, 189, 59, 235, 152, 169, 59, 121, 52, 155, 59, 251, 153, 147, 59, 76, 15, 146, 59, 69, 68, 148, 59, 62, 4, 151, 59, 19, 29, 151, 59, 153, 60, 146, 59, 29, 135, 135, 59, 230, 137, 111, 59, 115, 56, 74, 59, 31, 224, 36, 59, 0, 0, 0, 0, 222, 82, 148, 58, 17, 222, 110, 58, 163, 210, 227, 58, 235, 251, 178, 185, 117, 168, 94, 186, 111, 92, 173, 185, 6, 130, 62, 187, 91, 45, 106, 187, 215, 43, 81, 187, 101, 237, 198, 187, 202, 1, 216, 187, 193, 29, 197, 187, 211, 66, 17, 188, 17, 56, 16, 188, 21, 252, 248, 187, 83, 103, 36, 188, 95, 206, 17, 188, 215, 183, 217, 187, 66, 217, 8, 188, 238, 187, 187, 187, 136, 81, 12, 187, 132, 53, 70, 187, 131, 50, 174, 58, 211, 116, 205, 59, 139, 117, 195, 59, 64, 206, 69, 60, 98, 208, 147, 60, 214, 96, 144, 60, 175, 228, 207, 60, 251, 170, 1, 61, 215, 132, 244, 60, 212, 33, 33, 61, 123, 176, 54, 61, 125, 184, 31, 61, 18, 139, 83, 61, 135, 202, 85, 61, 75, 112, 15, 61, 167, 37, 118, 61, 108, 162, 133, 60, 35, 191, 94, 190, 20, 207, 193, 190, 35, 191, 94, 190, 108, 162, 133, 60, 167, 37, 118, 61, 75, 112, 15, 61, 135, 202, 85, 61, 18, 139, 83, 61, 125, 184, 31, 61, 123, 176, 54, 61, 212, 33, 33, 61, 215, 132, 244, 60, 251, 170, 1, 61, 175, 228, 207, 60, 214, 96, 144, 60, 98, 208, 147, 60, 64, 206, 69, 60, 139, 117, 195, 59, 211, 116, 205, 59, 131, 50, 174, 58, 132, 53, 70, 187, 136, 81, 12, 187, 238, 187, 187, 187, 66, 217, 8, 188, 215, 183, 217, 187, 95, 206, 17, 188, 83, 103, 36, 188, 21, 252, 248, 187, 17, 56, 16, 188, 211, 66, 17, 188, 193, 29, 197, 187, 202, 1, 216, 187, 101, 237, 198, 187, 215, 43, 81, 187, 91, 45, 106, 187, 6, 130, 62, 187, 111, 92, 173, 185, 117, 168, 94, 186, 235, 251, 178, 185, 163, 210, 227, 58, 17, 222, 110, 58, 222, 82, 148, 58, 0, 0, 0, 0, 37, 103, 32, 0, 0, 0, 0, 0, 101, 114, 114, 111, 114, 95, 118, 101, 99, 116, 111, 114, 61, 91, 0, 0, 73, 78, 86, 65, 76, 73, 68, 0, 72, 65, 77, 77, 73, 78, 71, 0, 66, 76, 65, 67, 75, 77, 65, 78, 0, 0, 0, 0, 0, 0, 0, 0, 66, 79, 88, 67, 65, 82, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0, 10, 0, 0, 0, 11, 0, 0, 0, 12, 0, 0, 0, 13, 0, 0, 0, 14, 0, 0, 0, 16, 0, 0, 0, 17, 0, 0, 0, 19, 0, 0, 0, 21, 0, 0, 0, 23, 0, 0, 0, 25, 0, 0, 0, 28, 0, 0, 0, 31, 0, 0, 0, 34, 0, 0, 0, 37, 0, 0, 0, 41, 0, 0, 0, 45, 0, 0, 0, 50, 0, 0, 0, 55, 0, 0, 0, 60, 0, 0, 0, 66, 0, 0, 0, 73, 0, 0, 0, 80, 0, 0, 0, 88, 0, 0, 0, 97, 0, 0, 0, 107, 0, 0, 0, 118, 0, 0, 0, 130, 0, 0, 0, 143, 0, 0, 0, 157, 0, 0, 0, 173, 0, 0, 0, 190, 0, 0, 0, 209, 0, 0, 0, 230, 0, 0, 0, 253, 0, 0, 0, 23, 1, 0, 0, 51, 1, 0, 0, 81, 1, 0, 0, 115, 1, 0, 0, 152, 1, 0, 0, 193, 1, 0, 0, 238, 1, 0, 0, 32, 2, 0, 0, 86, 2, 0, 0, 146, 2, 0, 0, 212, 2, 0, 0, 28, 3, 0, 0, 108, 3, 0, 0, 195, 3, 0, 0, 36, 4, 0, 0, 142, 4, 0, 0, 2, 5, 0, 0, 131, 5, 0, 0, 16, 6, 0, 0, 171, 6, 0, 0, 86, 7, 0, 0, 18, 8, 0, 0, 224, 8, 0, 0, 195, 9, 0, 0, 189, 10, 0, 0, 208, 11, 0, 0, 255, 12, 0, 0, 76, 14, 0, 0, 186, 15, 0, 0, 76, 17, 0, 0, 7, 19, 0, 0, 238, 20, 0, 0, 6, 23, 0, 0, 84, 25, 0, 0, 220, 27, 0, 0, 165, 30, 0, 0, 182, 33, 0, 0, 21, 37, 0, 0, 202, 40, 0, 0, 223, 44, 0, 0, 91, 49, 0, 0, 75, 54, 0, 0, 185, 59, 0, 0, 178, 65, 0, 0, 68, 72, 0, 0, 126, 79, 0, 0, 113, 87, 0, 0, 47, 96, 0, 0, 206, 105, 0, 0, 98, 116, 0, 0, 255, 127, 0, 0, 0, 0, 0, 0], "i8", ALLOC_NONE, Runtime.GLOBAL_BASE);
 
@@ -1559,7 +1548,6 @@ var _atan2 = Math_atan2;
 function _log10(x) {
     return Math.log(x) / Math.LN10;
 }
-
 
 
 
@@ -3641,7 +3629,7 @@ var FS = {
         }
         node.node_ops.setattr(node, {
             timestamp: Date.now()
-                // we ignore the uid / gid for now
+            // we ignore the uid / gid for now
         });
     },
     lchown: function(path, uid, gid) {
@@ -4886,7 +4874,7 @@ var SOCKFS = {
             sock.server = new WebSocketServer({
                 host: host,
                 port: sock.sport
-                    // TODO support backlog
+                // TODO support backlog
             });
 
             sock.server.on('connection', function(ws) {
@@ -5180,11 +5168,11 @@ function __formatString(format, varargs) {
                             flagZeroPad = true;
                             break;
                         }
-                    case 32:
-                        flagPadSign = true;
-                        break;
-                    default:
-                        break flagsLoop;
+                        case 32:
+                            flagPadSign = true;
+                            break;
+                        default:
+                            break flagsLoop;
                 }
                 textIndex++;
                 next = HEAP8[((textIndex + 1) | 0)];
@@ -5276,269 +5264,262 @@ function __formatString(format, varargs) {
                 case 'o':
                 case 'x':
                 case 'X':
-                case 'p':
-                    {
-                        // Integer.
-                        var signed = next == 100 || next == 105;
-                        argSize = argSize || 4;
-                        var currArg = getNextArg('i' + (argSize * 8));
-                        var origArg = currArg;
-                        var argText;
-                        // Flatten i64-1 [low, high] into a (slightly rounded) double
-                        if (argSize == 8) {
-                            currArg = Runtime.makeBigInt(currArg[0], currArg[1], next == 117);
-                        }
-                        // Truncate to requested size.
-                        if (argSize <= 4) {
-                            var limit = Math.pow(256, argSize) - 1;
-                            currArg = (signed ? reSign : unSign)(currArg & limit, argSize * 8);
-                        }
-                        // Format the number.
-                        var currAbsArg = Math.abs(currArg);
-                        var prefix = '';
-                        if (next == 100 || next == 105) {
-                            if (argSize == 8 && i64Math) argText = i64Math.stringify(origArg[0], origArg[1], null);
-                            else
-                                argText = reSign(currArg, 8 * argSize, 1).toString(10);
-                        } else if (next == 117) {
-                            if (argSize == 8 && i64Math) argText = i64Math.stringify(origArg[0], origArg[1], true);
-                            else
-                                argText = unSign(currArg, 8 * argSize, 1).toString(10);
-                            currArg = Math.abs(currArg);
-                        } else if (next == 111) {
-                            argText = (flagAlternative ? '0' : '') + currAbsArg.toString(8);
-                        } else if (next == 120 || next == 88) {
-                            prefix = (flagAlternative && currArg != 0) ? '0x' : '';
-                            if (argSize == 8 && i64Math) {
-                                if (origArg[1]) {
-                                    argText = (origArg[1] >>> 0).toString(16);
-                                    var lower = (origArg[0] >>> 0).toString(16);
-                                    while (lower.length < 8) lower = '0' + lower;
-                                    argText += lower;
-                                } else {
-                                    argText = (origArg[0] >>> 0).toString(16);
-                                }
-                            } else
-                            if (currArg < 0) {
-                                // Represent negative numbers in hex as 2's complement.
-                                currArg = -currArg;
-                                argText = (currAbsArg - 1).toString(16);
-                                var buffer = [];
-                                for (var i = 0; i < argText.length; i++) {
-                                    buffer.push((0xF - parseInt(argText[i], 16)).toString(16));
-                                }
-                                argText = buffer.join('');
-                                while (argText.length < argSize * 2) argText = 'f' + argText;
+                case 'p': {
+                    // Integer.
+                    var signed = next == 100 || next == 105;
+                    argSize = argSize || 4;
+                    var currArg = getNextArg('i' + (argSize * 8));
+                    var origArg = currArg;
+                    var argText;
+                    // Flatten i64-1 [low, high] into a (slightly rounded) double
+                    if (argSize == 8) {
+                        currArg = Runtime.makeBigInt(currArg[0], currArg[1], next == 117);
+                    }
+                    // Truncate to requested size.
+                    if (argSize <= 4) {
+                        var limit = Math.pow(256, argSize) - 1;
+                        currArg = (signed ? reSign : unSign)(currArg & limit, argSize * 8);
+                    }
+                    // Format the number.
+                    var currAbsArg = Math.abs(currArg);
+                    var prefix = '';
+                    if (next == 100 || next == 105) {
+                        if (argSize == 8 && i64Math) argText = i64Math.stringify(origArg[0], origArg[1], null);
+                        else
+                            argText = reSign(currArg, 8 * argSize, 1).toString(10);
+                    } else if (next == 117) {
+                        if (argSize == 8 && i64Math) argText = i64Math.stringify(origArg[0], origArg[1], true);
+                        else
+                            argText = unSign(currArg, 8 * argSize, 1).toString(10);
+                        currArg = Math.abs(currArg);
+                    } else if (next == 111) {
+                        argText = (flagAlternative ? '0' : '') + currAbsArg.toString(8);
+                    } else if (next == 120 || next == 88) {
+                        prefix = (flagAlternative && currArg != 0) ? '0x' : '';
+                        if (argSize == 8 && i64Math) {
+                            if (origArg[1]) {
+                                argText = (origArg[1] >>> 0).toString(16);
+                                var lower = (origArg[0] >>> 0).toString(16);
+                                while (lower.length < 8) lower = '0' + lower;
+                                argText += lower;
                             } else {
-                                argText = currAbsArg.toString(16);
+                                argText = (origArg[0] >>> 0).toString(16);
                             }
-                            if (next == 88) {
-                                prefix = prefix.toUpperCase();
-                                argText = argText.toUpperCase();
+                        } else
+                        if (currArg < 0) {
+                            // Represent negative numbers in hex as 2's complement.
+                            currArg = -currArg;
+                            argText = (currAbsArg - 1).toString(16);
+                            var buffer = [];
+                            for (var i = 0; i < argText.length; i++) {
+                                buffer.push((0xF - parseInt(argText[i], 16)).toString(16));
                             }
-                        } else if (next == 112) {
-                            if (currAbsArg === 0) {
-                                argText = '(nil)';
-                            } else {
-                                prefix = '0x';
-                                argText = currAbsArg.toString(16);
-                            }
+                            argText = buffer.join('');
+                            while (argText.length < argSize * 2) argText = 'f' + argText;
+                        } else {
+                            argText = currAbsArg.toString(16);
                         }
-                        if (precisionSet) {
-                            while (argText.length < precision) {
-                                argText = '0' + argText;
-                            }
+                        if (next == 88) {
+                            prefix = prefix.toUpperCase();
+                            argText = argText.toUpperCase();
                         }
+                    } else if (next == 112) {
+                        if (currAbsArg === 0) {
+                            argText = '(nil)';
+                        } else {
+                            prefix = '0x';
+                            argText = currAbsArg.toString(16);
+                        }
+                    }
+                    if (precisionSet) {
+                        while (argText.length < precision) {
+                            argText = '0' + argText;
+                        }
+                    }
 
-                        // Add sign if needed
-                        if (currArg >= 0) {
-                            if (flagAlwaysSigned) {
-                                prefix = '+' + prefix;
-                            } else if (flagPadSign) {
+                    // Add sign if needed
+                    if (currArg >= 0) {
+                        if (flagAlwaysSigned) {
+                            prefix = '+' + prefix;
+                        } else if (flagPadSign) {
+                            prefix = ' ' + prefix;
+                        }
+                    }
+
+                    // Move sign to prefix so we zero-pad after the sign
+                    if (argText.charAt(0) == '-') {
+                        prefix = '-' + prefix;
+                        argText = argText.substr(1);
+                    }
+
+                    // Add padding.
+                    while (prefix.length + argText.length < width) {
+                        if (flagLeftAlign) {
+                            argText += ' ';
+                        } else {
+                            if (flagZeroPad) {
+                                argText = '0' + argText;
+                            } else {
                                 prefix = ' ' + prefix;
                             }
                         }
-
-                        // Move sign to prefix so we zero-pad after the sign
-                        if (argText.charAt(0) == '-') {
-                            prefix = '-' + prefix;
-                            argText = argText.substr(1);
-                        }
-
-                        // Add padding.
-                        while (prefix.length + argText.length < width) {
-                            if (flagLeftAlign) {
-                                argText += ' ';
-                            } else {
-                                if (flagZeroPad) {
-                                    argText = '0' + argText;
-                                } else {
-                                    prefix = ' ' + prefix;
-                                }
-                            }
-                        }
-
-                        // Insert the result into the buffer.
-                        argText = prefix + argText;
-                        argText.split('').forEach(function(chr) {
-                            ret.push(chr.charCodeAt(0));
-                        });
-                        break;
                     }
+
+                    // Insert the result into the buffer.
+                    argText = prefix + argText;
+                    argText.split('').forEach(function(chr) {
+                        ret.push(chr.charCodeAt(0));
+                    });
+                    break;
+                }
                 case 'f':
                 case 'F':
                 case 'e':
                 case 'E':
                 case 'g':
-                case 'G':
-                    {
-                        // Float.
-                        var currArg = getNextArg('double');
-                        var argText;
-                        if (isNaN(currArg)) {
-                            argText = 'nan';
-                            flagZeroPad = false;
-                        } else if (!isFinite(currArg)) {
-                            argText = (currArg < 0 ? '-' : '') + 'inf';
-                            flagZeroPad = false;
+                case 'G': {
+                    // Float.
+                    var currArg = getNextArg('double');
+                    var argText;
+                    if (isNaN(currArg)) {
+                        argText = 'nan';
+                        flagZeroPad = false;
+                    } else if (!isFinite(currArg)) {
+                        argText = (currArg < 0 ? '-' : '') + 'inf';
+                        flagZeroPad = false;
+                    } else {
+                        var isGeneral = false;
+                        var effectivePrecision = Math.min(precision, 20);
+
+                        // Convert g/G to f/F or e/E, as per:
+                        // http://pubs.opengroup.org/onlinepubs/9699919799/functions/printf.html
+                        if (next == 103 || next == 71) {
+                            isGeneral = true;
+                            precision = precision || 1;
+                            var exponent = parseInt(currArg.toExponential(effectivePrecision).split('e')[1], 10);
+                            if (precision > exponent && exponent >= -4) {
+                                next = ((next == 103) ? 'f' : 'F').charCodeAt(0);
+                                precision -= exponent + 1;
+                            } else {
+                                next = ((next == 103) ? 'e' : 'E').charCodeAt(0);
+                                precision--;
+                            }
+                            effectivePrecision = Math.min(precision, 20);
+                        }
+
+                        if (next == 101 || next == 69) {
+                            argText = currArg.toExponential(effectivePrecision);
+                            // Make sure the exponent has at least 2 digits.
+                            if (/[eE][-+]\d$/.test(argText)) {
+                                argText = argText.slice(0, -1) + '0' + argText.slice(-1);
+                            }
+                        } else if (next == 102 || next == 70) {
+                            argText = currArg.toFixed(effectivePrecision);
+                            if (currArg === 0 && __reallyNegative(currArg)) {
+                                argText = '-' + argText;
+                            }
+                        }
+
+                        var parts = argText.split('e');
+                        if (isGeneral && !flagAlternative) {
+                            // Discard trailing zeros and periods.
+                            while (parts[0].length > 1 && parts[0].indexOf('.') != -1 &&
+                                (parts[0].slice(-1) == '0' || parts[0].slice(-1) == '.')) {
+                                parts[0] = parts[0].slice(0, -1);
+                            }
                         } else {
-                            var isGeneral = false;
-                            var effectivePrecision = Math.min(precision, 20);
+                            // Make sure we have a period in alternative mode.
+                            if (flagAlternative && argText.indexOf('.') == -1) parts[0] += '.';
+                            // Zero pad until required precision.
+                            while (precision > effectivePrecision++) parts[0] += '0';
+                        }
+                        argText = parts[0] + (parts.length > 1 ? 'e' + parts[1] : '');
 
-                            // Convert g/G to f/F or e/E, as per:
-                            // http://pubs.opengroup.org/onlinepubs/9699919799/functions/printf.html
-                            if (next == 103 || next == 71) {
-                                isGeneral = true;
-                                precision = precision || 1;
-                                var exponent = parseInt(currArg.toExponential(effectivePrecision).split('e')[1], 10);
-                                if (precision > exponent && exponent >= -4) {
-                                    next = ((next == 103) ? 'f' : 'F').charCodeAt(0);
-                                    precision -= exponent + 1;
-                                } else {
-                                    next = ((next == 103) ? 'e' : 'E').charCodeAt(0);
-                                    precision--;
-                                }
-                                effectivePrecision = Math.min(precision, 20);
-                            }
+                        // Capitalize 'E' if needed.
+                        if (next == 69) argText = argText.toUpperCase();
 
-                            if (next == 101 || next == 69) {
-                                argText = currArg.toExponential(effectivePrecision);
-                                // Make sure the exponent has at least 2 digits.
-                                if (/[eE][-+]\d$/.test(argText)) {
-                                    argText = argText.slice(0, -1) + '0' + argText.slice(-1);
-                                }
-                            } else if (next == 102 || next == 70) {
-                                argText = currArg.toFixed(effectivePrecision);
-                                if (currArg === 0 && __reallyNegative(currArg)) {
-                                    argText = '-' + argText;
-                                }
-                            }
-
-                            var parts = argText.split('e');
-                            if (isGeneral && !flagAlternative) {
-                                // Discard trailing zeros and periods.
-                                while (parts[0].length > 1 && parts[0].indexOf('.') != -1 &&
-                                    (parts[0].slice(-1) == '0' || parts[0].slice(-1) == '.')) {
-                                    parts[0] = parts[0].slice(0, -1);
-                                }
-                            } else {
-                                // Make sure we have a period in alternative mode.
-                                if (flagAlternative && argText.indexOf('.') == -1) parts[0] += '.';
-                                // Zero pad until required precision.
-                                while (precision > effectivePrecision++) parts[0] += '0';
-                            }
-                            argText = parts[0] + (parts.length > 1 ? 'e' + parts[1] : '');
-
-                            // Capitalize 'E' if needed.
-                            if (next == 69) argText = argText.toUpperCase();
-
-                            // Add sign.
-                            if (currArg >= 0) {
-                                if (flagAlwaysSigned) {
-                                    argText = '+' + argText;
-                                } else if (flagPadSign) {
-                                    argText = ' ' + argText;
-                                }
+                        // Add sign.
+                        if (currArg >= 0) {
+                            if (flagAlwaysSigned) {
+                                argText = '+' + argText;
+                            } else if (flagPadSign) {
+                                argText = ' ' + argText;
                             }
                         }
-
-                        // Add padding.
-                        while (argText.length < width) {
-                            if (flagLeftAlign) {
-                                argText += ' ';
-                            } else {
-                                if (flagZeroPad && (argText[0] == '-' || argText[0] == '+')) {
-                                    argText = argText[0] + '0' + argText.slice(1);
-                                } else {
-                                    argText = (flagZeroPad ? '0' : ' ') + argText;
-                                }
-                            }
-                        }
-
-                        // Adjust case.
-                        if (next < 97) argText = argText.toUpperCase();
-
-                        // Insert the result into the buffer.
-                        argText.split('').forEach(function(chr) {
-                            ret.push(chr.charCodeAt(0));
-                        });
-                        break;
                     }
-                case 's':
-                    {
-                        // String.
-                        var arg = getNextArg('i8*');
-                        var argLength = arg ? _strlen(arg) : '(null)'.length;
-                        if (precisionSet) argLength = Math.min(argLength, precision);
-                        if (!flagLeftAlign) {
-                            while (argLength < width--) {
-                                ret.push(32);
-                            }
-                        }
-                        if (arg) {
-                            for (var i = 0; i < argLength; i++) {
-                                ret.push(HEAPU8[((arg++) | 0)]);
-                            }
-                        } else {
-                            ret = ret.concat(intArrayFromString('(null)'.substr(0, argLength), true));
-                        }
+
+                    // Add padding.
+                    while (argText.length < width) {
                         if (flagLeftAlign) {
-                            while (argLength < width--) {
-                                ret.push(32);
+                            argText += ' ';
+                        } else {
+                            if (flagZeroPad && (argText[0] == '-' || argText[0] == '+')) {
+                                argText = argText[0] + '0' + argText.slice(1);
+                            } else {
+                                argText = (flagZeroPad ? '0' : ' ') + argText;
                             }
                         }
-                        break;
                     }
-                case 'c':
-                    {
-                        // Character.
-                        if (flagLeftAlign) ret.push(getNextArg('i8'));
-                        while (--width > 0) {
+
+                    // Adjust case.
+                    if (next < 97) argText = argText.toUpperCase();
+
+                    // Insert the result into the buffer.
+                    argText.split('').forEach(function(chr) {
+                        ret.push(chr.charCodeAt(0));
+                    });
+                    break;
+                }
+                case 's': {
+                    // String.
+                    var arg = getNextArg('i8*');
+                    var argLength = arg ? _strlen(arg) : '(null)'.length;
+                    if (precisionSet) argLength = Math.min(argLength, precision);
+                    if (!flagLeftAlign) {
+                        while (argLength < width--) {
                             ret.push(32);
                         }
-                        if (!flagLeftAlign) ret.push(getNextArg('i8'));
-                        break;
                     }
-                case 'n':
-                    {
-                        // Write the length written so far to the next parameter.
-                        var ptr = getNextArg('i32*');
-                        HEAP32[((ptr) >> 2)] = ret.length;
-                        break;
+                    if (arg) {
+                        for (var i = 0; i < argLength; i++) {
+                            ret.push(HEAPU8[((arg++) | 0)]);
+                        }
+                    } else {
+                        ret = ret.concat(intArrayFromString('(null)'.substr(0, argLength), true));
                     }
-                case '%':
-                    {
-                        // Literal percent sign.
-                        ret.push(curr);
-                        break;
-                    }
-                default:
-                    {
-                        // Unknown specifiers remain untouched.
-                        for (var i = startTextIndex; i < textIndex + 2; i++) {
-                            ret.push(HEAP8[(i)]);
+                    if (flagLeftAlign) {
+                        while (argLength < width--) {
+                            ret.push(32);
                         }
                     }
+                    break;
+                }
+                case 'c': {
+                    // Character.
+                    if (flagLeftAlign) ret.push(getNextArg('i8'));
+                    while (--width > 0) {
+                        ret.push(32);
+                    }
+                    if (!flagLeftAlign) ret.push(getNextArg('i8'));
+                    break;
+                }
+                case 'n': {
+                    // Write the length written so far to the next parameter.
+                    var ptr = getNextArg('i32*');
+                    HEAP32[((ptr) >> 2)] = ret.length;
+                    break;
+                }
+                case '%': {
+                    // Literal percent sign.
+                    ret.push(curr);
+                    break;
+                }
+                default: {
+                    // Unknown specifiers remain untouched.
+                    for (var i = startTextIndex; i < textIndex + 2; i++) {
+                        ret.push(HEAP8[(i)]);
+                    }
+                }
             }
             textIndex += 2;
             // TODO: Support a/A (hex float) and m (last error) specifiers.
@@ -6174,7 +6155,7 @@ var Browser = {
             'ogg': 'audio/ogg',
             'wav': 'audio/wav',
             'mp3': 'audio/mpeg'
-        }[name.substr(name.lastIndexOf('.') + 1)];
+        } [name.substr(name.lastIndexOf('.') + 1)];
     },
     getUserMedia: function(func) {
         if (!window.getUserMedia) {
@@ -6468,9 +6449,9 @@ function asmPrintInt(x, y) {
 }
 
 function asmPrintFloat(x, y) {
-        Module.print('float ' + x + ',' + y); // + ' ' + new Error().stack);
-    }
-    // EMSCRIPTEN_START_ASM
+    Module.print('float ' + x + ',' + y); // + ' ' + new Error().stack);
+}
+// EMSCRIPTEN_START_ASM
 var asm = (function(global, env, buffer) {
     "use asm";
     var a = new global.Int8Array(buffer);
@@ -11384,11 +11365,7 @@ run();
 
 
 
-
-
 // {{MODULE_ADDITIONS}}
-
-
 
 
 
@@ -11613,18 +11590,18 @@ sdrjs.RationalResamplerFF = function(interpolation, decimation, transition_bw, w
         } else return this._process_noheapcheck(input);
     };
     this._process_noheapcheck = function(input) //if we are sure we have enough space in the buffers 
-        {
-            asm$.cpy(this.input_buffer.arr, 0, this.input_buffer.arr, this.remain_offset, this.remain);
-            asm$.cpy(this.input_buffer.arr, this.remain, input, 0, input.length);
-            var total_input_size = input.length + this.remain;
-            d = rational_resampler_ff(this.input_buffer.ptr, this.output_buffer.ptr, total_input_size, this.interpolation, this.decimation, this.taps.ptr, this.taps_length, this.last_taps_delay);
-            this.last_taps_delay = d.last_taps_delay;
-            this.remain = total_input_size - d.input_processed;
-            this.remain_offset = d.input_processed;
-            var output_copy_arr = new Float32Array(d.output_size);
-            asm$.cpy(output_copy_arr, 0, this.output_buffer.arr, 0, d.output_size);
-            return output_copy_arr;
-        };
+    {
+        asm$.cpy(this.input_buffer.arr, 0, this.input_buffer.arr, this.remain_offset, this.remain);
+        asm$.cpy(this.input_buffer.arr, this.remain, input, 0, input.length);
+        var total_input_size = input.length + this.remain;
+        d = rational_resampler_ff(this.input_buffer.ptr, this.output_buffer.ptr, total_input_size, this.interpolation, this.decimation, this.taps.ptr, this.taps_length, this.last_taps_delay);
+        this.last_taps_delay = d.last_taps_delay;
+        this.remain = total_input_size - d.input_processed;
+        this.remain_offset = d.input_processed;
+        var output_copy_arr = new Float32Array(d.output_size);
+        asm$.cpy(output_copy_arr, 0, this.output_buffer.arr, 0, d.output_size);
+        return output_copy_arr;
+    };
 };
 
 
